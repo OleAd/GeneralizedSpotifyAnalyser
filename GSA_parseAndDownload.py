@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Jun 22 19:38:57 2020
-
-@author: olehe
+@author: Ole Adrian Heggli
 
 This script takes a csv with Spotify Playlist IDs
 Then gets all tracks from those playlists
