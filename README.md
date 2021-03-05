@@ -1,7 +1,7 @@
 # GeneralizedSpotifyAnalyser
  This should contain scripts that allows for easily analysing Spotify playlists.
  
- A user guide will follow.
+ A user guide and preprint will follow.
  
 # Environment
  Made in Spyder 4.0.1
