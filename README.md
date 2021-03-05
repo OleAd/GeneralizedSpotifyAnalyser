@@ -5,15 +5,25 @@
  
 # Environment
  Made in Spyder 4.0.1
- Running in GeneralizedSpotifyAnalyser environment
+ 
+ Running in my GeneralizedSpotifyAnalyser environment
+ 
  Working with:
+ 
  Python 3.7.6
+ 
  spotipy 2.17.1
+ 
  pandas 1.0.3
+ 
  joblib 0.14.1
+ 
  tqdm 4.47.0
+ 
  requests 2.25.1
+ 
  Tested on:
+ 
  Windows 10 Pro 20H2
  
 # Usage
