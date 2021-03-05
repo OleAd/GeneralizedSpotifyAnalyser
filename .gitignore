@@ -1,0 +1,4 @@
+spotifyConstants.py
+*.mp3
+*.pkl
+*.pyc
