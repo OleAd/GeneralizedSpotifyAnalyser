@@ -7,8 +7,8 @@ Created on Tue Jun 23 14:21:46 2020
 This file just holds API keys
 """
 
-myUser = 'YOUR USER'
-myClientID = 'YOUR CLIENT ID'
-myClientSecret = 'YOUR CLIENT SECRET'
-myRedirect = 'YOUR REDIRECT'
+myUser = 'oleadrian'
+myClientID = 'a91ed9edffbc4349b0ae66ad2680900a'
+myClientSecret = 'c2f72683b7df48bc984d0f299ceb8c8c'
+myRedirect = 'http://example.com/callback/'
 
