@@ -1,6 +1,5 @@
 spotifyConstants.py
-spotifyConstants_template.py
 *.mp3
 *.pkl
 *.pyc
-spotifyConstants.py
+

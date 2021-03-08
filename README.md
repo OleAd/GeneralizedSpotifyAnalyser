@@ -35,5 +35,5 @@
  
  NOTE: make sure that any other columns are treated correctly in pandas.
  
- Use spotifyConstants to fill in your API keys.
+ Use spotifyConstants_template to fill in your API keys, then rename to spotifyConstants.py
  
