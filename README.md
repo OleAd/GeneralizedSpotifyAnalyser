@@ -3,6 +3,9 @@
  
  A user guide and preprint will follow.
  
+ A "get up and running" tutorial can be found here: https://oleheggli.medium.com/easily-analyse-audio-features-from-spotify-playlists-part-1-3b004cd406b3
+ 
+ 
 # Environment
  Made in Spyder 4.0.1
  
