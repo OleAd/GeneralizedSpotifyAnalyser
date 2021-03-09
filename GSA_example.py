@@ -65,16 +65,10 @@ if not os.path.exists('Audio'):
 if not os.path.exists('Data'):
 	os.makedirs('Data')
 
-# Now get tracks out of the playlists
-completedPlaylists=[]
-totalTracks = 0
-
-
-
 
 #%% Get tracks
-listsId = tqdm(IDlist, desc='Getting audio features') 
-results = Parallel(n_jobs=8)(delayed(GSA.getInformation)(thisList) for thisList in listsId)
+IDlist_tqdm = tqdm(IDlist, desc='Getting audio features') 
+results = Parallel(n_jobs=8)(delayed(GSA.getInformation)(thisList) for thisList in IDlist_tqdm)
 # set n_jobs to as many threads you want your to use on your cpu.
 
 
