@@ -29,35 +29,38 @@ sp_oauth = oauth2.SpotifyOAuth(client_id=spotifyConstants.myClientID,
 								   redirect_uri=spotifyConstants.myRedirect,
 								   scope=None, cache_path='CACHE')
 
-global token_info
+token_info = []
+token = []
+#global sp
 
 
 #%% Authenticate
 
 def authenticate():
+	global token_info, sp_oauth, token
+	
 
-	# need to rewrite this section, as currently you have to manually do it.
-	#token_info = sp_oauth.get_cached_token()
-	#if not token_info:
-	auth_url = sp_oauth.get_authorize_url()
-	print('\n')
-	print(auth_url)
-	print('\n')
-	# try to put the link in the clipboard
-	pd.DataFrame([auth_url]).to_clipboard(index=False, header=False)
-	
-	
-	# If the session hangs at this line, just paste the reponse manually into response.
-	response = input('Paste the above link into your browser (it is in your clipboard), then paste the redirect url here: ')
-	code = sp_oauth.parse_response_code(response)
-	
-	global token_info
-	# Note a deprecation warning with this one. 
-	token_info = sp_oauth.get_access_token(code)
+	token_info = sp_oauth.get_cached_token()
+	if not token_info:
+		auth_url = sp_oauth.get_authorize_url()
+		print('\n')
+		print(auth_url)
+		print('\n')
+		# try to put the link in the clipboard
+		pd.DataFrame([auth_url]).to_clipboard(index=False, header=False)
+		
+		
+		# If the session hangs at this line, just paste the reponse manually into response.
+		response = input('Paste the above link into your browser (it is in your clipboard), then paste the redirect url here: ')
+		code = sp_oauth.parse_response_code(response)
+		
+		
+		# Note a deprecation warning with this one. 
+		token_info = sp_oauth.get_access_token(code)
 	
 	token = token_info['access_token']
-	global sp
-	sp = spotipy.Spotify(auth=token)
+	#global sp
+	#sp = spotipy.Spotify(auth=token)
 	return
 
 #%% this function checks of the token is expired, and refreshes it if so 
@@ -65,30 +68,39 @@ def authenticate():
 def refresh():
 	
 	print('Refresh temporarily disabled. Working on fix.')
-	'''
-	global token_info
-	global sp
-	global sp_oauth
 	
-	if sp_oauth.is_token_expired(token_info):
-		token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-		token = token_info['access_token']
-		sp = spotipy.Spotify(auth=token)
-	'''
+	global token_info, sp_oauth, token
+	if token_info == []:
+		authenticate()
+	else:
+		if sp_oauth.is_token_expired(token_info):
+			token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+			token = token_info['access_token']
+			#sp = spotipy.Spotify(auth=token)
+			print('Refreshed token')
+	
 	
 	return
 
 
 #%% Function for getting information
-def getInformation(thisList):
+def getInformation(thisList, verbose=0):
 	#refresh()
-	print('Getting audio features and information from playlist.')
+	global token_info, token, sp_oauth
+	if verbose:
+		print('Getting audio features and information from playlist.')
 	
 	if not os.path.exists('Playlists'):
 		os.makedirs('Playlists')
 
-	global sp
+	#global sp
 	#global token_info
+		
+	# testing issues with parallel
+	#print(token_info)
+	#token = token_info['access_token']
+	#refresh()
+	sp = spotipy.Spotify(auth=token)
 
 	column_names = ['playlistID','TrackName', 'TrackID', 'SampleURL', 'ReleaseYear', 'Genres', 'danceability', 'energy', 
 				'loudness', 'speechiness', 'acousticness', 'instrumentalness',
@@ -107,7 +119,7 @@ def getInformation(thisList):
 		return thisSaveName
 	
 	# refresh token
-	# refresh()
+	refresh()
 	try:
 		theseTracks = sp.playlist_tracks(thisList, limit=None)
 	except:
@@ -135,7 +147,7 @@ def getInformation(thisList):
 				 }]
 		thisDf = pd.DataFrame(thisDict)
 		sampleDataFrame = sampleDataFrame.append(thisDf, ignore_index=True)
-		return thisSaveName
+		return 'Error'
 		
 
 	# Make sure to get all tracks in a playlist
@@ -151,7 +163,8 @@ def getInformation(thisList):
 		if thisId == None:
 			continue
 		thisName=track['track']['name']
-		print('Current track: ' + thisName)
+		if verbose:
+			print('Current track: ' + thisName)
 
 		
 		thisReleaseDate = track['track']['album']['release_date']
@@ -303,7 +316,9 @@ def downloadTracks(track):
 	
 def searchPlaylists(searchWord, number=50, market=None):
 	# get global variables
-	global sp
+	global token_info, token, sp_oauth
+	
+	sp=spotipy.Spotify(auth=token)
 	
 	# searching maxes out at 50, so if number > 50, then do it multiple times
 	reps = 0
