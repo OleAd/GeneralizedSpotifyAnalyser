@@ -29,15 +29,15 @@ sp_oauth = oauth2.SpotifyOAuth(client_id=spotifyConstants.myClientID,
 								   redirect_uri=spotifyConstants.myRedirect,
 								   scope=None, cache_path='CACHE')
 
-token_info = []
-token = []
+#token_info = []
+#token = []
 #global sp
 
 
 #%% Authenticate
 
 def authenticate():
-	global token_info, sp_oauth, token
+	#global token_info, sp_oauth, token
 	
 
 	token_info = sp_oauth.get_cached_token()
@@ -57,7 +57,12 @@ def authenticate():
 		
 		# Note a deprecation warning with this one. 
 		token_info = sp_oauth.get_access_token(code)
-	
+		
+	if sp_oauth.is_token_expired(token_info):
+			token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
+			token = token_info['access_token']
+			print('Refreshed token')
+			
 	token = token_info['access_token']
 	#global sp
 	#sp = spotipy.Spotify(auth=token)
@@ -67,39 +72,33 @@ def authenticate():
 # Call this before every call to sp.
 def refresh():
 	
-	print('Refresh temporarily disabled. Working on fix.')
+	output = 0
+	print('Refresh temporarily unstable. Working on fix.')
 	
-	global token_info, sp_oauth, token
-	if token_info == []:
-		authenticate()
-	else:
-		if sp_oauth.is_token_expired(token_info):
+	token_info = sp_oauth.get_cached_token()
+	if sp_oauth.is_token_expired(token_info):
 			token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
 			token = token_info['access_token']
-			#sp = spotipy.Spotify(auth=token)
 			print('Refreshed token')
+			output = 1
 	
-	
-	return
+	return output
 
 
 #%% Function for getting information
-def getInformation(thisList, verbose=0):
+def getInformation(thisList, verbose=False):
 	#refresh()
-	global token_info, token, sp_oauth
+	#global token_info, token, sp_oauth
 	if verbose:
 		print('Getting audio features and information from playlist.')
 	
 	if not os.path.exists('Playlists'):
 		os.makedirs('Playlists')
 
-	#global sp
-	#global token_info
-		
-	# testing issues with parallel
-	#print(token_info)
-	#token = token_info['access_token']
-	#refresh()
+	
+	refresh()
+	token_info = sp_oauth.get_cached_token()
+	token = token_info['access_token']
 	sp = spotipy.Spotify(auth=token)
 
 	column_names = ['playlistID','TrackName', 'TrackID', 'SampleURL', 'ReleaseYear', 'Genres', 'danceability', 'energy', 
@@ -119,7 +118,7 @@ def getInformation(thisList, verbose=0):
 		return thisSaveName
 	
 	# refresh token
-	refresh()
+	#refresh()
 	try:
 		theseTracks = sp.playlist_tracks(thisList, limit=None)
 	except:
@@ -315,9 +314,10 @@ def downloadTracks(track):
 #%% Function for searching for playlists
 	
 def searchPlaylists(searchWord, number=50, market=None):
-	# get global variables
-	global token_info, token, sp_oauth
+	# get token
 	
+	token_info = sp_oauth.get_cached_token()
+	token = token_info['access_token']
 	sp=spotipy.Spotify(auth=token)
 	
 	# searching maxes out at 50, so if number > 50, then do it multiple times

@@ -23,7 +23,7 @@ GSA.authenticate()
 # You need to give the function the Spotify ID of the playlist.
 # See GSA_example for more details.
 # Here's an example playlist ID: 37i9dQZF1DX3hgbB9nrEB1
-myPlaylist = GSA.getInformation('37i9dQZF1DX3hgbB9nrEB1')
+myPlaylist = GSA.getInformation('37i9dQZF1DX3hgbB9nrEB1', verbose=True)
 
 # myPlaylist now contains the location of a .pkl-file where the information is stored.
 # We save the information to a .pkl-file for easier processing of multiple playlists

@@ -68,9 +68,9 @@ if not os.path.exists('Data'):
 
 #%% Get tracks
 IDlist_tqdm = tqdm(IDlist, desc='Getting audio features') 
-results = Parallel(n_jobs=4, require='sharedmem')(delayed(GSA.getInformation)(thisList) for thisList in IDlist_tqdm)
-
+results = Parallel(n_jobs=4)(delayed(GSA.getInformation)(thisList) for thisList in IDlist_tqdm)
 # set n_jobs to as many threads you want your to use on your cpu.
+
 
 
 #%% Add the supplementary information to the dataframe
