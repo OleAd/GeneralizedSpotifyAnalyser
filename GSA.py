@@ -13,6 +13,7 @@ This script contains functions used in the Generalized Spotify Analyser
 
 import pandas as pd
 import time
+import math
 import os.path
 import random
 import requests
@@ -26,7 +27,9 @@ import spotifyConstants
 sp_oauth = oauth2.SpotifyOAuth(client_id=spotifyConstants.myClientID,
 								   client_secret=spotifyConstants.myClientSecret,
 								   redirect_uri=spotifyConstants.myRedirect,
-								   scope=None, cache_path='/.cache')
+								   scope=None, cache_path='CACHE')
+
+global token_info
 
 
 #%% Authenticate
@@ -60,12 +63,20 @@ def authenticate():
 #%% this function checks of the token is expired, and refreshes it if so 
 # Call this before every call to sp.
 def refresh():
-	global token_info, sp, sp_oauth
+	
+	print('Refresh temporarily disabled. Working on fix.')
+	'''
+	global token_info
+	global sp
+	global sp_oauth
 	
 	if sp_oauth.is_token_expired(token_info):
 		token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
 		token = token_info['access_token']
 		sp = spotipy.Spotify(auth=token)
+	'''
+	
+	return
 
 
 #%% Function for getting information
@@ -77,14 +88,14 @@ def getInformation(thisList):
 		os.makedirs('Playlists')
 
 	global sp
-	global token_info
+	#global token_info
 
 	column_names = ['playlistID','TrackName', 'TrackID', 'SampleURL', 'ReleaseYear', 'Genres', 'danceability', 'energy', 
 				'loudness', 'speechiness', 'acousticness', 'instrumentalness',
 				'liveness', 'valence', 'tempo', 'key', 'mode', 'duration_ms']
 	sampleDataFrame = pd.DataFrame(columns = column_names)
 	# Sleep a little bit to not piss of Spotify
-	thisSleep = random.randint(0,10) * 0.08
+	thisSleep = random.randint(0,30) * 0.08
 	time.sleep(thisSleep)
 	
 	# make a filename to save it to
@@ -96,7 +107,7 @@ def getInformation(thisList):
 		return thisSaveName
 	
 	# refresh token
-	refresh()
+	# refresh()
 	try:
 		theseTracks = sp.playlist_tracks(thisList, limit=None)
 	except:
@@ -160,7 +171,7 @@ def getInformation(thisList):
 		if thisArtistId == None:
 			thisGenres = '[unknown]'
 		else:
-			refresh()
+			#refresh()
 			try:
 				thisArtistInfo = sp.artist(thisArtistId)
 				thisGenres = thisArtistInfo['genres']
@@ -175,7 +186,7 @@ def getInformation(thisList):
 		thisSleep = random.randint(0,10)*0.09
 		time.sleep(thisSleep)
 		# Get audio features for the track
-		refresh()
+		#refresh()
 		thisFeature=sp.audio_features(tracks=thisId)
 		
 		# Create a dataframe entry
@@ -287,3 +298,52 @@ def downloadTracks(track):
 	return output
 
 
+
+#%% Function for searching for playlists
+	
+def searchPlaylists(searchWord, number=50, market=None):
+	# get global variables
+	global sp
+	
+	# searching maxes out at 50, so if number > 50, then do it multiple times
+	reps = 0
+	limit = number
+	if number > 50:
+		reps = math.floor(number/50)
+		remainder = number % 50
+		limit = 50
+		
+	# initiate a dataframe to hold playlists
+	column_names = ['playlistID','playlistName','nTracks', 'type', 'owner']
+	playlistDF = pd.DataFrame(columns = column_names)
+	
+	searchType = 'playlist'
+	offset = 0
+	for n in range(0, reps+1):
+		# for last round of search, update limit to remainder
+		if n == reps:
+			limit = remainder
+			
+		# do the search
+		#refresh()
+		if limit != 0:
+			searchResults = sp.search(searchWord, limit=limit, offset=offset, type=searchType, market=market)
+		else:
+			break
+		
+		for thisPlaylist in searchResults['playlists']['items']:
+			thisEntry = [{'playlistID':thisPlaylist['id'], 
+					   'playlistName':thisPlaylist['name'], 
+					   'nTracks':thisPlaylist['tracks']['total'],
+					   'type':thisPlaylist['owner']['type'],
+					   'owner':thisPlaylist['owner']['id']}]
+			#print(thisEntry)
+			#print('\n')
+			playlistDF = playlistDF.append(thisEntry, ignore_index=True)
+		# break loop if we get less results than the limit
+		if len(searchResults['playlists']['items']) < limit:
+			break
+		# now update offset
+		offset += 50
+
+	return playlistDF

@@ -2,4 +2,6 @@ spotifyConstants.py
 *.mp3
 *.pkl
 *.pyc
+CACHE
+GSA_buildDataset.py
 
