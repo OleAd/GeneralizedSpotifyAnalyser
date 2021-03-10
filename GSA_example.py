@@ -99,7 +99,6 @@ merged_output.to_csv('Data/dataset_with_audiofeatures.csv', encoding='UTF-8')
 #%% Now download 30-sec preview mp3s
 
 to_download = merged_output[['SampleURL', 'TrackName', 'TrackID', 'playlistID']].values.tolist()
-
 to_download = tqdm(to_download, desc='Downloading tracks')
 downloaded = Parallel(n_jobs=8)(delayed(GSA.downloadTracks)(track=thisTrack) for thisTrack in to_download)
 
