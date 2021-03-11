@@ -29,9 +29,8 @@ sp_oauth = oauth2.SpotifyOAuth(client_id=spotifyConstants.myClientID,
 								   redirect_uri=spotifyConstants.myRedirect,
 								   scope=None, cache_path='CACHE')
 
-#token_info = []
-#token = []
-#global sp
+# create global sp? Not sure what is best, re parallelizing
+# if global, then would need to update auth
 
 
 #%% Authenticate
@@ -87,8 +86,18 @@ def refresh():
 
 #%% Function for getting information
 def getInformation(thisList, verbose=False):
+	# make a filename to save it to
+	# also, return this filename
+	thisSaveName = 'Playlists/' + thisList + '.pkl'
+	
+	# now check if the file already exists
+	if os.path.isfile(thisSaveName):
+		return thisSaveName
+	
+	
+	
 	#refresh()
-	#global token_info, token, sp_oauth
+
 	if verbose:
 		print('Getting audio features and information from playlist.')
 	
@@ -99,7 +108,7 @@ def getInformation(thisList, verbose=False):
 	refresh()
 	token_info = sp_oauth.get_cached_token()
 	token = token_info['access_token']
-	sp = spotipy.Spotify(auth=token)
+	sp = spotipy.Spotify(auth=token, retries=20, status_retries=10, backoff_factor=0.2)
 
 	column_names = ['playlistID','TrackName', 'TrackID', 'SampleURL', 'ReleaseYear', 'Genres', 'danceability', 'energy', 
 				'loudness', 'speechiness', 'acousticness', 'instrumentalness',
@@ -109,13 +118,7 @@ def getInformation(thisList, verbose=False):
 	thisSleep = random.randint(0,30) * 0.08
 	time.sleep(thisSleep)
 	
-	# make a filename to save it to
-	# also, return this filename
-	thisSaveName = 'Playlists/' + thisList + '.pkl'
 	
-	# now check if the file already exists
-	if os.path.isfile(thisSaveName):
-		return thisSaveName
 	
 	# refresh token
 	#refresh()
@@ -198,7 +201,12 @@ def getInformation(thisList, verbose=False):
 		thisSleep = random.randint(0,10)*0.09
 		time.sleep(thisSleep)
 		# Get audio features for the track
-		#refresh()
+		update = refresh()
+		if update == 1:
+			token_info = sp_oauth.get_cached_token()
+			token = token_info['access_token']
+			sp = spotipy.Spotify(auth=token, retries=20, status_retries=10, backoff_factor=0.2)
+		
 		thisFeature=sp.audio_features(tracks=thisId)
 		
 		# Create a dataframe entry
