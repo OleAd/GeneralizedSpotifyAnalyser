@@ -62,7 +62,7 @@ def authenticate():
 			token = token_info['access_token']
 			print('Refreshed token')
 			
-	token = token_info['access_token']
+	#token = token_info['access_token']
 	#global sp
 	#sp = spotipy.Spotify(auth=token)
 	return
@@ -77,7 +77,7 @@ def refresh():
 	token_info = sp_oauth.get_cached_token()
 	if sp_oauth.is_token_expired(token_info):
 			token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
-			token = token_info['access_token']
+			#token = token_info['access_token']
 			print('Refreshed token')
 			output = 1
 	
@@ -105,17 +105,21 @@ def getInformation(thisList, verbose=False):
 		os.makedirs('Playlists')
 
 	
-	refresh()
-	token_info = sp_oauth.get_cached_token()
+	#refresh()
+	authenticate()
+	token_info_cached = sp_oauth.get_cached_token()
+	token_info = sp_oauth.refresh_access_token(token_info_cached['refresh_token'])
 	token = token_info['access_token']
-	sp = spotipy.Spotify(auth=token, retries=20, status_retries=10, backoff_factor=0.2)
+	sp = spotipy.Spotify(auth=token)
+	
+	
 
 	column_names = ['playlistID','TrackName', 'TrackID', 'SampleURL', 'ReleaseYear', 'Genres', 'danceability', 'energy', 
 				'loudness', 'speechiness', 'acousticness', 'instrumentalness',
 				'liveness', 'valence', 'tempo', 'key', 'mode', 'duration_ms']
 	sampleDataFrame = pd.DataFrame(columns = column_names)
 	# Sleep a little bit to not piss of Spotify
-	thisSleep = random.randint(0,30) * 0.08
+	thisSleep = random.randint(0,10) * 0.01
 	time.sleep(thisSleep)
 	
 	
@@ -149,12 +153,13 @@ def getInformation(thisList, verbose=False):
 				 }]
 		thisDf = pd.DataFrame(thisDict)
 		sampleDataFrame = sampleDataFrame.append(thisDf, ignore_index=True)
-		return 'Error'
+		return thisSaveName
 		
 
 	# Make sure to get all tracks in a playlist
 	tracks = theseTracks['items']
 	while theseTracks['next']:
+		authenticate()
 		theseTracks = sp.next(theseTracks)
 		tracks.extend(theseTracks['items'])
 	
@@ -201,12 +206,14 @@ def getInformation(thisList, verbose=False):
 		thisSleep = random.randint(0,10)*0.09
 		time.sleep(thisSleep)
 		# Get audio features for the track
+		'''
 		update = refresh()
 		if update == 1:
 			token_info = sp_oauth.get_cached_token()
 			token = token_info['access_token']
-			sp = spotipy.Spotify(auth=token, retries=20, status_retries=10, backoff_factor=0.2)
-		
+			sp = spotipy.Spotify(auth=token)
+		authenticate()
+		'''
 		thisFeature=sp.audio_features(tracks=thisId)
 		
 		# Create a dataframe entry
