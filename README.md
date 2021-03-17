@@ -5,6 +5,8 @@
  
  A "get up and running" tutorial can be found here: https://oleheggli.medium.com/easily-analyse-audio-features-from-spotify-playlists-part-1-3b004cd406b3
  
+ If you end up using this for research, please cite: Heggli, Ole A., Jan Stupacher, and Peter Vuust. 2021. “Diurnal Fluctuations in Musical Preference.” PsyArXiv. March 16. doi:10.31234/osf.io/6e4yw.
+ 
  
 # Environment
  Made in Spyder 4.0.1
