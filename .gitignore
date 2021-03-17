@@ -3,5 +3,6 @@ spotifyConstants.py
 *.pkl
 *.pyc
 CACHE
-GSA_buildDataset.py
-
+.cache-*
+testScript.py
+testCACHE

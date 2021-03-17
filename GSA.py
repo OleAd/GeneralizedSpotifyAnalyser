@@ -27,18 +27,26 @@ import spotifyConstants
 sp_oauth = oauth2.SpotifyOAuth(client_id=spotifyConstants.myClientID,
 								   client_secret=spotifyConstants.myClientSecret,
 								   redirect_uri=spotifyConstants.myRedirect,
-								   scope=None, cache_path='CACHE')
+								   username=spotifyConstants.myUser,
+								   scope=None)
 
 # create global sp? Not sure what is best, re parallelizing
 # if global, then would need to update auth
 
 
+sp = []
+
 #%% Authenticate
 
 def authenticate():
 	#global token_info, sp_oauth, token
+	global sp, sp_oauth
+	sp = spotipy.Spotify(auth_manager=sp_oauth)
 	
-
+	# do a search to initiate
+	not_output = sp.me()
+	
+	'''
 	token_info = sp_oauth.get_cached_token()
 	if not token_info:
 		auth_url = sp_oauth.get_authorize_url()
@@ -61,7 +69,7 @@ def authenticate():
 			token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
 			token = token_info['access_token']
 			print('Refreshed token')
-			
+	'''		
 	#token = token_info['access_token']
 	#global sp
 	#sp = spotipy.Spotify(auth=token)
@@ -73,14 +81,14 @@ def refresh():
 	
 	output = 0
 	print('Refresh temporarily unstable. Working on fix.')
-	
+	'''
 	token_info = sp_oauth.get_cached_token()
 	if sp_oauth.is_token_expired(token_info):
 			token_info = sp_oauth.refresh_access_token(token_info['refresh_token'])
 			#token = token_info['access_token']
 			print('Refreshed token')
 			output = 1
-	
+	'''
 	return output
 
 
@@ -88,6 +96,8 @@ def refresh():
 def getInformation(thisList, verbose=False):
 	# make a filename to save it to
 	# also, return this filename
+	global sp
+	
 	thisSaveName = 'Playlists/' + thisList + '.pkl'
 	
 	# now check if the file already exists
@@ -104,14 +114,14 @@ def getInformation(thisList, verbose=False):
 	if not os.path.exists('Playlists'):
 		os.makedirs('Playlists')
 
-	
+	'''
 	#refresh()
 	authenticate()
 	token_info_cached = sp_oauth.get_cached_token()
 	token_info = sp_oauth.refresh_access_token(token_info_cached['refresh_token'])
 	token = token_info['access_token']
 	sp = spotipy.Spotify(auth=token)
-	
+	'''
 	
 
 	column_names = ['playlistID','TrackName', 'TrackID', 'SampleURL', 'ReleaseYear', 'Genres', 'danceability', 'energy', 
@@ -153,13 +163,13 @@ def getInformation(thisList, verbose=False):
 				 }]
 		thisDf = pd.DataFrame(thisDict)
 		sampleDataFrame = sampleDataFrame.append(thisDf, ignore_index=True)
-		return thisSaveName
+		return 'error'
 		
 
 	# Make sure to get all tracks in a playlist
 	tracks = theseTracks['items']
 	while theseTracks['next']:
-		authenticate()
+		#authenticate()
 		theseTracks = sp.next(theseTracks)
 		tracks.extend(theseTracks['items'])
 	
