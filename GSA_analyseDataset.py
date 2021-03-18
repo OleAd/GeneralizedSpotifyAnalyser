@@ -193,10 +193,18 @@ for thisFeature in features:
 		signifStar = '* '
 	# get p-value
 	pVal = thisStat['p-corr']
+	# need to format the pVal a bit, since they are quite low numbers, and P=0.0 doesn't look good
+	# if pVal is below 0.0001, then print as p < 0.001
+	if float(pVal.round(3))<0.001:
+		pVal = '< 0.001'
+	else:
+		pVal = '= ' + str(float(pVal.round(3)))
+	
+	
 	# get Cohen's d-value
 	dVal = thisStat['cohen-d']
 	# make a string with the statistics
-	statText = signifStar + 'P = ' + str(float(pVal.round(4))) + ', Cohen\'s D = ' + str(float(dVal.round(4)))
+	statText = signifStar + 'P ' + pVal + ', Cohen\'s D = ' + str(float(dVal.round(3)))
 	# add title
 	plt.suptitle(thisFeature.capitalize())
 	# add statistics
