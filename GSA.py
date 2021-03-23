@@ -341,9 +341,11 @@ def downloadTracks(track):
 def searchPlaylists(searchWord, number=50, market=None):
 	# get token
 	
-	token_info = sp_oauth.get_cached_token()
-	token = token_info['access_token']
-	sp=spotipy.Spotify(auth=token)
+	#token_info = sp_oauth.get_cached_token()
+	#token = token_info['access_token']
+	#sp=spotipy.Spotify(auth=token)
+	
+	global sp
 	
 	# searching maxes out at 50, so if number > 50, then do it multiple times
 	reps = 0
@@ -352,16 +354,17 @@ def searchPlaylists(searchWord, number=50, market=None):
 		reps = math.floor(number/50)
 		remainder = number % 50
 		limit = 50
-		
+	else:
+		remainder = 0
 	# initiate a dataframe to hold playlists
-	column_names = ['playlistID','playlistName','nTracks', 'type', 'owner']
+	column_names = ['playlistID','playlistName','nTracks', 'type', 'owner', 'description', 'url']
 	playlistDF = pd.DataFrame(columns = column_names)
 	
 	searchType = 'playlist'
 	offset = 0
 	for n in range(0, reps+1):
 		# for last round of search, update limit to remainder
-		if n == reps:
+		if n == reps and number > 50:
 			limit = remainder
 			
 		# do the search
@@ -376,7 +379,9 @@ def searchPlaylists(searchWord, number=50, market=None):
 					   'playlistName':thisPlaylist['name'], 
 					   'nTracks':thisPlaylist['tracks']['total'],
 					   'type':thisPlaylist['owner']['type'],
-					   'owner':thisPlaylist['owner']['id']}]
+					   'owner':thisPlaylist['owner']['id'],
+					   'description':thisPlaylist['description'],
+					   'url':thisPlaylist['owner']['external_urls']['spotify']}]
 			#print(thisEntry)
 			#print('\n')
 			playlistDF = playlistDF.append(thisEntry, ignore_index=True)
