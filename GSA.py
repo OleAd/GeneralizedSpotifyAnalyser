@@ -392,3 +392,32 @@ def searchPlaylists(searchWord, number=50, market=None):
 		offset += 50
 
 	return playlistDF
+
+#%% Function for getting addition playlist information
+	
+def getPlaylistFollowers(playlistIDs):
+	# this just gets the playlist followers in a separate function
+	# be aware that using this function in addition to the others may put you into rate limit at the Spotify API
+	
+	global sp
+	
+	# initiate a dataframe to hold playlist info
+	column_names = ['playlistID','nFoll']
+	playlistDF = pd.DataFrame(columns = column_names)
+	
+	
+	for playlistID in playlistIDs:
+		thisPlaylistInfo = sp.playlist(playlistID, 'followers')
+		
+		thisFollowers = thisPlaylistInfo['followers']['total']
+		
+		if thisFollowers is None:
+			thisFollowers = 0
+		
+		thisEntry = [{'playlistID':playlistID,
+				'nFoll':thisFollowers}]
+		playlistDF = playlistDF.append(thisEntry, ignore_index=True)
+		
+		
+
+	return playlistDF

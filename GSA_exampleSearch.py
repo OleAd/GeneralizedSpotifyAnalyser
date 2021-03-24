@@ -25,8 +25,16 @@ GSA.authenticate()
 # Let's do a search for corona music:
 # Search term is 'Corona', we're searching up to 1k playlists, and in no specific market.
 
-results = GSA.searchPlaylists('Corona', number=1000, market=None)
+results = GSA.searchPlaylists('Corona', number=50, market=None)
 
 # The spotify API limits playlist searches to 1000.
 
+#%% add the number of followers to the dataframe using the GSA.getPlaylistFollowers() function
+
+followers = GSA.getPlaylistFollowers(results['playlistID'])
+
+# and now merge them
+
+# merge with original dataset to get supplementary information	
+results = results.merge(followers, on ='playlistID', how='left')
 
