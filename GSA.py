@@ -421,3 +421,191 @@ def getPlaylistFollowers(playlistIDs):
 		
 
 	return playlistDF
+
+
+
+#%% Function for getting albums
+	
+
+def getAlbumInformation(thisAlbum, verbose=False, asDataFrame=False):
+	
+	global sp
+	
+	thisSaveName = 'Albums/' + thisAlbum + '.pkl'
+	
+	# now check if the file already exists
+	if os.path.isfile(thisSaveName):
+		return thisSaveName
+	
+	if verbose:
+		print('Getting audio features and information from albums.')
+	
+	if not os.path.exists('Albums'):
+		os.makedirs('Albums')
+		
+	
+	column_names = ['AlbumID', 'AlbumName', 'TrackNumber', 'TrackName', 'TrackID', 'SampleURL', 'ReleaseYear', 'Genres', 'danceability', 'energy', 
+				'loudness', 'speechiness', 'acousticness', 'instrumentalness',
+				'liveness', 'valence', 'tempo', 'key', 'mode', 'duration_ms']
+	albumDF = pd.DataFrame(columns = column_names)
+	# Sleep a little bit to not piss of Spotify
+	thisSleep = random.randint(0,10) * 0.01
+	time.sleep(thisSleep)
+	
+	
+	try:
+		theseTracks = sp.album(thisAlbum)
+	except:
+		# handle errors with getting tracks
+		theseTracks = 0
+		thisDict = [{'AlbumID':'EMPTYDATAFRAME',
+			   'AlbumName':'EMPTYDATAFRAME',
+			   'TrackNumber':0,  
+			   'TrackName':'EMPTYDATAFRAME',
+				 'TrackID':'EMPTYDATAFRAME',
+				 'SampleURL':'EMPTYDATAFRAME',
+				 'ReleaseYear': 'EMPTYDATAFRAME',
+				 'Genres':'EMPTYDATAFRAME',
+				 'Popularity':-1,
+				 'danceability':0,
+				 'energy':0,
+				 'loudness':0,
+				 'speechiness':0,
+				 'acousticness':0,
+				 'instrumentalness':0,
+				 'liveness':0,
+				 'valence':0,
+				 'tempo':0,
+				 'key':0,
+				 'mode':0,
+				 'duration_ms':0
+				 }]
+		thisDf = pd.DataFrame(thisDict)
+		albumDF = albumDF.append(thisDf, ignore_index=True)
+		return 'error'
+	
+	thisAlbumName = theseTracks['name']
+	#print(thisAlbumName)
+	thisReleaseDate = theseTracks['release_date']
+	thisPopularity = theseTracks['popularity']
+	
+	if thisPopularity == None:
+			thisPopularity=-1
+		
+	if thisReleaseDate == None:
+		thisReleaseDate = 0
+	
+	
+	tracks = theseTracks['tracks']['items']
+	while theseTracks['tracks']['next']:
+		#authenticate()
+		theseTracks = sp.next(theseTracks)
+		tracks.extend(theseTracks['tracks']['items'])
+	
+	for track in tracks:
+		if track==None:
+			continue
+		thisId=track['id']
+		if thisId == None:
+			continue
+		thisName=track['name']
+		if verbose:
+			print('Current track: ' + thisName)
+		
+		thisTrackNumber = track['track_number']
+
+		
+		
+			
+		# genre is linked to artist, not to song. Therefore, need another get here.
+		# first get artist.
+		# will get the first artist, there might be numerous
+
+		thisArtistId = track['artists'][0]['id']
+		if thisArtistId == None:
+			thisGenres = '[unknown]'
+		else:
+			#refresh()
+			try:
+				thisArtistInfo = sp.artist(thisArtistId)
+				thisGenres = thisArtistInfo['genres']
+			except:
+				thisGenres = []
+			if thisGenres == []:
+				thisGenres = '[unknown]'
+		
+		
+		thisUrl=track['preview_url']
+		# Sleep a little bit to avoid rate limiting
+		thisSleep = random.randint(0,10)*0.09
+		time.sleep(thisSleep)
+		# Get audio features for the track
+		
+		thisFeature=sp.audio_features(tracks=thisId)
+		
+		# Create a dataframe entry
+		if thisFeature[0]!=None:
+			thisDict = [{'AlbumID':thisAlbum,
+				'AlbumName':thisAlbumName,
+				'TrackName':thisName,
+				'TrackNumber':thisTrackNumber,
+				 'TrackID':thisId,
+				 'SampleURL':thisUrl,
+				 'ReleaseYear': thisReleaseDate,
+				 'Genres':thisGenres,
+				 'Popularity':thisPopularity,
+				 'danceability':thisFeature[0]['danceability'],
+				 'energy':thisFeature[0]['energy'],
+				 'loudness':thisFeature[0]['loudness'],
+				 'speechiness':thisFeature[0]['speechiness'],
+				 'acousticness':thisFeature[0]['acousticness'],
+				 'instrumentalness':thisFeature[0]['instrumentalness'],
+				 'liveness':thisFeature[0]['liveness'],
+				 'valence':thisFeature[0]['valence'],
+				 'tempo':thisFeature[0]['tempo'],
+				 'key':thisFeature[0]['key'],
+				 'mode':thisFeature[0]['mode'],
+				 'duration_ms':thisFeature[0]['duration_ms']
+				 }]
+			thisDf = pd.DataFrame(thisDict)
+			albumDF = albumDF.append(thisDf, ignore_index=True)
+
+	
+	# do a check here to see if empty 
+	if albumDF.empty:
+		thisDict = [{'AlbumID':'EMPTYDATAFRAME',
+			   'AlbumName':'EMPTYDATAFRAME',  
+			   'TrackName':'EMPTYDATAFRAME',
+			   'TrackNumber':0,
+				 'TrackID':'EMPTYDATAFRAME',
+				 'SampleURL':'EMPTYDATAFRAME',
+				 'ReleaseYear': 'EMPTYDATAFRAME',
+				 'Genres':'EMPTYDATAFRAME',
+				 'Popularity':-1,
+				 'danceability':0,
+				 'energy':0,
+				 'loudness':0,
+				 'speechiness':0,
+				 'acousticness':0,
+				 'instrumentalness':0,
+				 'liveness':0,
+				 'valence':0,
+				 'tempo':0,
+				 'key':0,
+				 'mode':0,
+				 'duration_ms':0
+				 }]
+		thisDf = pd.DataFrame(thisDict)
+		albumDF = albumDF.append(thisDf, ignore_index=True)
+		
+	# save as pickle here
+	albumDF.to_pickle(thisSaveName)
+	
+	if asDataFrame:
+		output = albumDF
+	else:
+		output = thisSaveName
+	
+	
+	
+	return output
