@@ -86,7 +86,7 @@ merged_output = dataset.merge(output, on ='AlbumID', how='left')
 # merged_output.to_csv('Data/Jackson_Browne_dataset.csv', encoding='UTF-8')
 
 
-#%% Analysis
+#%% Getting album level data.
 
 # We're interested in album level data
 # Let's calculate mean and std values of the audio features for each album
